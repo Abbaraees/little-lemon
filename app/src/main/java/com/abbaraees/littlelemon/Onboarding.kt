@@ -1,5 +1,7 @@
 package com.abbaraees.littlelemon
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -29,6 +31,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -36,10 +39,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.edit
+import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Onboarding() {
+fun Onboarding(
+    navController: NavController
+) {
     var firstName by rememberSaveable {
         mutableStateOf("")
     }
@@ -49,26 +56,15 @@ fun Onboarding() {
     var email by rememberSaveable {
         mutableStateOf("")
     }
+    val context = LocalContext.current
+    val sharedPreferences = context.getSharedPreferences("littlelemon.prefs", Context.MODE_PRIVATE)
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.logo),
-                contentDescription = "logo",
-                modifier = Modifier
-                    .width(200.dp)
-                    .height(50.dp)
-                    .padding(8.dp)
-            )
-        }
+        Header()
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
@@ -125,11 +121,33 @@ fun Onboarding() {
             )
 
             Button(
-                onClick = { /*TODO*/ },
+                onClick = {
+                    if (firstName.isBlank() || lastName.isBlank() || email.isBlank()) {
+                        Toast.makeText(
+                            context,
+                            "Registration unsuccessful. Please enter all data.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    else {
+                        sharedPreferences.edit(commit = true) {
+                            putString("firstName", firstName)
+                            putString("lastName", lastName)
+                            putString("email", email)
+                        }
+                        Toast.makeText(
+                            context,
+                            "Registration successful.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        navController.navigate(Home.route)
+
+                    }
+                },
                 colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.my_yellow)),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 8.dp, top = 32.dp, end=8.dp),
+                    .padding(start = 8.dp, top = 32.dp, end = 8.dp),
 
             ) {
                 Text(text = "Register", color = Color.Black)
@@ -143,5 +161,5 @@ fun Onboarding() {
 @Preview(showSystemUi = true)
 @Composable
 fun OnboardingPreview() {
-    Onboarding()
+//    Onboarding()
 }
